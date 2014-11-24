@@ -70,9 +70,9 @@ def main():
         if wk == 115:
             debug['suppress'] = not debug['suppress']
 
-        print views, wk
-
         retval, im = camera.read()
+
+        # print len(cv2.split(im)), "splitting"
 
         try:
             #resize image to be a square
@@ -87,6 +87,11 @@ def main():
             #and produces the result of canny edge detection with a focus on a specific region
             gray = preprocess(im)
 
+            # equ = cv2.equalizeHist(gray)
+            # # res = np.hstack((gray, equ))
+            # cv2.imshow('res', equ)
+            # gray = equ
+
             ret, thresh = cv2.threshold(gray, 250, 255, cv2.THRESH_BINARY)
             view_name = 'thresh'
             if views[view_name]:
@@ -97,14 +102,13 @@ def main():
             edges = cv2.Canny(gray, 100, 240)
             region(edges, margin=0)  # section off ROI
 
+            points = findPoints(edges)
+
             view_name = 'edges'
             if views[view_name]:
                 cv2.imshow(view_name, edges)
             elif cv2.getWindowProperty(view_name, cv2.CV_WINDOW_AUTOSIZE) > 0:  # get any window prop to check for existence
                 cv2.destroyWindow(view_name)
-
-            points = findPoints(edges)
-
             # for point in points:
             #     cv2.circle(im, tuple(point), 5, (0, 0, 0), -1)
             # cv2.imshow('intersections', im)

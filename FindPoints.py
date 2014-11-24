@@ -36,8 +36,8 @@ def findPoints(edges):
         polygon = cv2.approxPolyDP(cnt, 0.01*cv2.arcLength(cnt,True),True)
         points = validatePoly(edges, polygon)
 
-        # color = (r.randint(0, 255), r.randint(0, 255), r.randint(0, 255))
-        # cv2.drawContours(im, contours, contours.index(cnt), color, thickness=2)
+        color = (r.randint(0, 255), r.randint(0, 255), r.randint(0, 255))
+        cv2.drawContours(edges, contours, contours.index(cnt), color, thickness=2)
 
         if points:
             return points
