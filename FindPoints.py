@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 import Errors
+import random as r
 from Process import show_intersections
 
 
@@ -27,11 +28,7 @@ def validatePoly(edges, polygon):
 
 
 def findPoints(edges):
-    #find contours in shallow copy of edges, wipe it, then draw the contours on it
-    contourimg = edges.copy()
-    contours, hierarchy = cv2.findContours(contourimg, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    contourimg = np.zeros((500, 500), dtype=np.uint8)
-    cv2.drawContours(contourimg, contours, -1, (255,255,255), thickness = 1)
+    contours, hierarchy = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
     #for every contour found, approximate it with a polygon and filter for
     #the desired quadrilateral
@@ -39,11 +36,8 @@ def findPoints(edges):
         polygon = cv2.approxPolyDP(cnt, 0.01*cv2.arcLength(cnt,True),True)
         points = validatePoly(edges, polygon)
 
-        # #testing
-        # rem = np.array([5, 5])
-        # points = [p-rem for p in points]
-        # print [p-rem for p in points]
-
+        # color = (r.randint(0, 255), r.randint(0, 255), r.randint(0, 255))
+        # cv2.drawContours(im, contours, contours.index(cnt), color, thickness=2)
 
         if points:
             return points

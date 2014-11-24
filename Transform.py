@@ -13,8 +13,9 @@ def transform(im, points):
 
     #error if points are float32
     dst_square = np.array(p_list, np.float32)
-    src_square = np.array(points,np.float32)
-    
+    src_square = np.array(points, np.float32)
+
+    #if we don't have the same number of points, the transformation is invalid
     if not (len(dst_square) - len(src_square)) == 0:
         raise Errors.NotEnoughPointsToTransformError
     
