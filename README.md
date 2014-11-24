@@ -1,2 +1,1 @@
-Gradient
-========
+A Quick Response code decoder using zbar

@@ -1,2 +1,5 @@
 #ignore all binaries
 *.pyc
+
+#ignore idea config
+.idea/
