@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-from Process import draw_square, preprocess, region
+from Process import draw_square, preprocess, region, show_intersections
 from FindPoints import findPoints
 from Transform import transform
 import Errors
@@ -17,7 +17,18 @@ qr_out = "./qr_out.png"
 win = (500, 500)
 
 #debugging
-suppress = True
+debug = \
+    {
+        'suppress': True
+    }
+
+views = \
+    {
+        'reg': False,
+        'corners': False,
+        'edges': False,
+        'thresh': False
+    }
 
 #array keeps tracked of decoded student qrs
 students = {}
@@ -35,14 +46,31 @@ def main():
         #The function waitKey waits for a key event infinitely (when delay<=0 )
         #or for delay milliseconds, when it is positive. It returns the code of
         #the pressed key or -1 if no key was pressed before the specified time
-        #had elapsed. Escape code is 27
-        wk = cv2.cv.WaitKey(10)
-        if wk == 27:
-            break
+        #had elapsed.
 
-        if wk == 32 and cv2.getWindowProperty("success", cv2.CV_WINDOW_AUTOSIZE) > 0:
+        #escapes
+        wk = cv2.cv.WaitKey(10)
+        if wk == 27:  # escape
+            break
+        if wk == 32 and cv2.getWindowProperty("success", cv2.CV_WINDOW_AUTOSIZE) > 0:  # space
             cv2.destroyWindow("success")
             success = False
+
+        #view change
+        if wk == 114:  # r
+            views['reg'] = not views['reg']
+        if wk == 99:  # c
+            views['corners'] = not views['corners']
+        if wk == 101:  # e
+            views['edges'] = not views['edges']
+        if wk == 116:  # t
+            views['thresh'] = not views['thresh']
+
+        #output control
+        if wk == 115:
+            debug['suppress'] = not debug['suppress']
+
+        print views, wk
 
         retval, im = camera.read()
 
@@ -53,14 +81,27 @@ def main():
 
             #present feed for input
             draw_square(im)
-            cv2.imshow("Input", im)
+            cv2.imshow('input', im)
 
             #resizes image, coverts to grayscale,
             #and produces the result of canny edge detection with a focus on a specific region
             gray = preprocess(im)
 
+            ret, thresh = cv2.threshold(gray, 250, 255, cv2.THRESH_BINARY)
+            view_name = 'thresh'
+            if views[view_name]:
+                cv2.imshow(view_name, thresh)
+            elif cv2.getWindowProperty(view_name, cv2.CV_WINDOW_AUTOSIZE) > 0:  # get any window prop to check for existence
+                cv2.destroyWindow(view_name)
+
             edges = cv2.Canny(gray, 100, 240)
             region(edges, margin=0)  # section off ROI
+
+            view_name = 'edges'
+            if views[view_name]:
+                cv2.imshow(view_name, edges)
+            elif cv2.getWindowProperty(view_name, cv2.CV_WINDOW_AUTOSIZE) > 0:  # get any window prop to check for existence
+                cv2.destroyWindow(view_name)
 
             points = findPoints(edges)
 
@@ -69,26 +110,34 @@ def main():
             # cv2.imshow('intersections', im)
 
         except Errors.ImproperIntersectionsError as e:
-            if not suppress:
+            if not debug['suppress']:
                 print e
             continue
         except Exception as e:
-            if not suppress:
+            if not debug['suppress']:
                 print "Error in Preprocessing or Finding Intersections: ", e
             continue
 
-        # show_intersections(im, intersections)
+        view_name = 'corners'
+        if views[view_name]:
+            show_intersections(im, points)
+        elif cv2.getWindowProperty(view_name, cv2.CV_WINDOW_AUTOSIZE) > 0:  # get any window prop to check for existence
+            cv2.destroyWindow(view_name)
 
         try:
             # continue
             registered = transform(im, points)
         except Errors.NotEnoughPointsToTransformError as e:
-            if not suppress:
+            if not debug['suppress']:
                 print e
             continue
 
         region(registered, margin=60)
-        cv2.imshow("registered", registered)
+        view_name = 'reg'
+        if views[view_name]:
+            cv2.imshow(view_name, registered)
+        elif cv2.getWindowProperty(view_name, cv2.CV_WINDOW_AUTOSIZE) > 0:  # get any window prop to check for existence
+            cv2.destroyWindow(view_name)
         cv2.imwrite(qr_out, registered)
 
         p = Popen(['zbarimg', qr_out], stdin=PIPE, stdout=PIPE, stderr=PIPE)

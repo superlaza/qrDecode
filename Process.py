@@ -24,12 +24,12 @@ def show_intersections(im, intersections):
     for point in intersections:
         cv2.circle(im, (int(round(point[0])), int(round(point[1]))),
                    6, (0, 0, 255), -1)
-    cv2.imshow("Corners", im)
+    cv2.imshow("corners", im)
 
 
 def preprocess(im):
     gray = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY)
-    # r, dst = cv2.threshold(gray, 250, 255, cv2.THRESH_BINARY)
+    # r, gray = cv2.threshold(gray, 250, 255, cv2.THRESH_BINARY)
     # gray = cv2.erode(dst, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (4, 4)), iterations=5)
 
     return gray
